@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
+# Eous AI Mentor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An AI-powered study assistant designed to help students learn effectively, track their progress, and master academic subjects.
 
-Currently, two official plugins are available:
+## 🚀 Introduction
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Eous AI Mentor is a smart, interactive educational platform that leverages the power of AI to provide personalized tutoring. Whether you need a quick summary, a detailed breakdown, or a step-by-step guide, Eous adapts to your learning style. It also helps you organize your study materials, take quizzes, and track your growth through a gamified experience.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 19, TypeScript, Vite
+- **Styling**: Tailwind CSS 4, Lucide React (Icons)
+- **Backend & Database**: Supabase (Authentication, Multi-Factor Authentication (MFA), Database)
+- **AI Integration**: Google Gemini API
+- **Mobile Support**: Capacitor (for native Android application)
+- **State Management & Hooks**: React Hooks (useState, useEffect, useRef)
 
-## Expanding the ESLint configuration
+## 🏗️ System Architecture
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The application follows a client-heavy architecture with a serverless backend:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. **Client (Web & Mobile)**: The user interface is built with React and styled with Tailwind CSS. It handles user interactions, local state, and communicates with external services. Capacitor wraps the web app to run natively on Android.
+2. **Backend as a Service (BaaS)**: **Supabase** handles user authentication, session management, and data persistence (messages, bookmarks, quizzes, stats). It provides security and real-time capabilities.
+3. **AI Layer**: The app communicates directly with the **Google Gemini API** (using the `@google/generative-ai` SDK) to generate educational responses based on user queries and strict system prompts.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🔄 Workflow
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. **Authentication & Onboarding**:
+   - Users register and log in via Supabase Auth (with optional MFA).
+   - New users go through an onboarding flow to select their education level, subjects of interest, and preferred explanation style.
+2. **Learning & Chat**:
+   - Users ask questions to Eous.
+   - Eous responds strictly within the educational domain, adhering to the user's preferred explanation style (Short, Detailed, or Step-by-Step).
+3. **Library & Organization**:
+   - Users can bookmark helpful responses and organize them into custom folders for future reference.
+4. **Quizzes & Assessment**:
+   - The app automatically suggests or generates quizzes based on the chat history.
+   - Users take quizzes to test their knowledge and earn XP.
+5. **Progress Tracking**:
+   - The **Dashboard** displays total queries, library items, study streak, level, XP, and subject focus percentages based on interaction history.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## ⚙️ Getting Started
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Prerequisites
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- Node.js (v18+)
+- NPM
+- Supabase Account & Project
+- Google Gemini API Key
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/vtniscoding/eous-ai-mentor.git
+   cd eous-ai-mentor
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file in the root directory and add your environment variables (Do not commit this file!):
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_GEMINI_API_KEY=your_gemini_api_key
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+### Mobile Build (Android)
+
+1. Build the web project:
+   ```bash
+   npm run build
+   ```
+2. Sync with Capacitor:
+   ```bash
+   npx cap sync android
+   ```
+3. Open in Android Studio:
+   ```bash
+   npx cap open android
+   ```
