@@ -8,17 +8,11 @@ import { OnboardingFlow } from '@/components/onboarding/OnboardingFlow';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 import { Toaster } from '@/components/ui/sonner';
 import { useEffect } from 'react';
-import { App as CapApp } from '@capacitor/app';
 
 function App() {
+  // Remove global back button listener to allow component-specific handling
   useEffect(() => {
-    CapApp.addListener('backButton', ({ canGoBack }) => {
-      if (canGoBack) {
-        window.history.back();
-      } else {
-        CapApp.exitApp();
-      }
-    });
+    // No-op here, handled in components
   }, []);
 
   return (

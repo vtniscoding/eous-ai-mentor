@@ -15,6 +15,7 @@ interface SidebarProps {
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
   showSidebar: boolean;
+  setShowSidebar: (show: boolean) => void;
   handleNewChat: () => void;
   sessions: any[];
   currentSessionId: string | null;
@@ -25,7 +26,6 @@ interface SidebarProps {
   setShowDashboard: (show: boolean) => void;
   showQuizHub: boolean;
   setShowQuizHub: (show: boolean) => void;
-  setLoading: (loading: boolean) => void;
   handleDeleteSession: (id: string, e: React.MouseEvent) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -36,6 +36,7 @@ export function Sidebar({
   isCollapsed,
   setIsCollapsed,
   showSidebar,
+  setShowSidebar,
   handleNewChat,
   sessions,
   currentSessionId,
@@ -46,15 +47,21 @@ export function Sidebar({
   setShowDashboard,
   showQuizHub,
   setShowQuizHub,
-  setLoading,
   handleDeleteSession,
   searchQuery,
   setSearchQuery,
   existingFolders,
 }: SidebarProps) {
+  const handleAction = (callback: () => void) => {
+    callback();
+    if (window.innerWidth < 768) {
+      setShowSidebar(false);
+    }
+  };
+
   return (
     <div
-      className={`border-r border-border/40 flex flex-col transition-all duration-300 absolute md:relative z-30 h-full bg-card md:bg-card/40 backdrop-blur-xl ${
+      className={`border-r border-border/40 flex flex-col transition-all duration-300 absolute md:relative z-50 md:z-30 h-full bg-card md:bg-card/40 backdrop-blur-xl ${
         isCollapsed ? "md:w-16" : "md:w-64"
       } w-64 ${
         showSidebar ? "translate-x-0" : "-translate-x-full"
@@ -108,14 +115,14 @@ export function Sidebar({
       >
         {!isCollapsed ? (
           <Button
-            onClick={handleNewChat}
+            onClick={() => handleAction(handleNewChat)}
             className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center gap-2"
           >
             <Plus className="h-4 w-4" /> New Chat
           </Button>
         ) : (
           <Button
-            onClick={handleNewChat}
+            onClick={() => handleAction(handleNewChat)}
             size="icon"
             className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white h-10 w-10"
             title="New Chat"
@@ -142,11 +149,12 @@ export function Sidebar({
                   <div
                     key={session.id}
                     onClick={() => {
-                      setCurrentSessionId(session.id);
-                      setSelectedFolder(null);
-                      setShowDashboard(false);
-                      setShowQuizHub(false);
-                      setLoading(true);
+                      handleAction(() => {
+                        setCurrentSessionId(session.id);
+                        setSelectedFolder(null);
+                        setShowDashboard(false);
+                        setShowQuizHub(false);
+                      });
                     }}
                     className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all ${
                       currentSessionId === session.id && !selectedFolder
@@ -202,11 +210,13 @@ export function Sidebar({
                     }
                     size="sm"
                     onClick={() => {
-                      setSelectedFolder(
-                        selectedFolder === folder ? null : folder,
-                      );
-                      setShowDashboard(false);
-                      setShowQuizHub(false);
+                      handleAction(() => {
+                        setSelectedFolder(
+                          selectedFolder === folder ? null : folder,
+                        );
+                        setShowDashboard(false);
+                        setShowQuizHub(false);
+                      });
                     }}
                     className="h-7 text-xs flex items-center gap-1"
                     title={folder}
@@ -228,9 +238,11 @@ export function Sidebar({
               variant={showDashboard ? "default" : "outline"}
               size="sm"
               onClick={() => {
-                setShowDashboard(true);
-                setShowQuizHub(false);
-                setSelectedFolder(null);
+                handleAction(() => {
+                  setShowDashboard(true);
+                  setShowQuizHub(false);
+                  setSelectedFolder(null);
+                });
               }}
               className="w-fit justify-start gap-2 rounded-full h-8 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 border border-emerald-500/20 shadow-sm mt-1"
               title="Dashboard"
@@ -242,9 +254,11 @@ export function Sidebar({
               variant={showQuizHub ? "default" : "outline"}
               size="sm"
               onClick={() => {
-                setShowQuizHub(true);
-                setShowDashboard(false);
-                setSelectedFolder(null);
+                handleAction(() => {
+                  setShowQuizHub(true);
+                  setShowDashboard(false);
+                  setSelectedFolder(null);
+                });
               }}
               className="w-fit justify-start gap-2 rounded-full h-8 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 border border-purple-500/20 shadow-sm mt-1"
               title="Quizzes"

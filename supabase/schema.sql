@@ -139,3 +139,50 @@ CREATE POLICY "Users can update own quizzes" ON public.quizzes
 
 CREATE POLICY "Users can delete own quizzes" ON public.quizzes
   FOR DELETE USING (auth.uid() = user_id);
+
+-- Notifications table
+CREATE TABLE public.notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  type TEXT NOT NULL, -- e.g., 'mistake', 'streak', 'level', 'badge'
+  is_read BOOLEAN DEFAULT FALSE,
+  data JSONB DEFAULT '{}', -- Store extra info like quiz_id
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable Row Level Security for Notifications
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+-- Notifications Policies
+CREATE POLICY "Users can view own notifications" ON public.notifications
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own notifications" ON public.notifications
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own notifications" ON public.notifications
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Push Tokens table for targeting devices
+CREATE TABLE public.push_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL,
+  platform TEXT, -- 'ios', 'android', 'web'
+  last_seen TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, token)
+);
+
+-- Enable Row Level Security for Push Tokens
+ALTER TABLE public.push_tokens ENABLE ROW LEVEL SECURITY;
+
+-- Push Tokens Policies
+CREATE POLICY "Users can manage own tokens" ON public.push_tokens
+  FOR ALL USING (auth.uid() = user_id);
+
+-- Index for performance
+CREATE INDEX IF NOT EXISTS notifications_user_id_idx ON public.notifications(user_id);
+CREATE INDEX IF NOT EXISTS push_tokens_user_id_idx ON public.push_tokens(user_id);
