@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
 import { supabase } from '@/lib/supabase';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { AuthIntro } from './AuthIntro';
 
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -24,6 +25,13 @@ const registerSchema = z.object({
 type RegisterValues = z.infer<typeof registerSchema>;
 
 export function RegisterForm() {
+  const [searchParams] = useSearchParams();
+  const skipIntro = searchParams.get("intro") === "false";
+  const [showIntro, setShowIntro] = useState(() => {
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+    return isMobile && !skipIntro;
+  });
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -36,6 +44,15 @@ export function RegisterForm() {
       confirmPassword: '',
     }
   });
+
+  if (showIntro) {
+    return (
+      <AuthIntro
+        onLogin={() => navigate("/login?intro=false")}
+        onRegister={() => setShowIntro(false)}
+      />
+    );
+  }
 
   const password = watch('password', '');
 
@@ -120,7 +137,17 @@ export function RegisterForm() {
         </div>
 
         {/* Right Side: Form */}
-        <Card className="border-border/40 bg-card/60 backdrop-blur-xl shadow-2xl shadow-purple-500/5 animate-slide-up">
+        <Card className="relative border-border/40 bg-card/60 backdrop-blur-xl shadow-2xl shadow-purple-500/5 animate-slide-up">
+          {/* Absolute Circled Back Button for Mobile */}
+          <button 
+            type="button" 
+            onClick={() => setShowIntro(true)} 
+            className="md:hidden absolute top-4 left-4 z-20 w-8 h-8 bg-background/80 hover:bg-background border border-border/40 rounded-full flex items-center justify-center text-muted-foreground hover:text-white transition-all shadow-md active:scale-95"
+            title="Back to onboarding"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+
           <CardHeader className="space-y-1 mt-4">
             <div className="md:hidden flex justify-center mb-4">
               <img src="/app_icon.svg" alt="Eous Logo" className="h-10 w-10" />
@@ -195,7 +222,7 @@ export function RegisterForm() {
               </Button>
               <p className="text-sm text-center text-muted-foreground pt-2">
                 Already have an account?{' '}
-                <Link to="/login" className="text-primary font-medium hover:text-purple-600 transition-colors">
+                <Link to="/login?intro=false" className="text-primary font-medium hover:text-purple-600 transition-colors">
                   Log in
                 </Link>
               </p>

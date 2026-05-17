@@ -1,29 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1253 1253" width="100%" height="100%">
   <defs>
+    <!-- Background Radial Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#343542" />
+      <stop offset="30%" stop-color="#2f2f3c" />
+      <stop offset="50%" stop-color="#2a2c31" />
+      <stop offset="70%" stop-color="#24252a" />
+      <stop offset="100%" stop-color="#1d1e23" />
+    </radialGradient>
+
+    <!-- Robot Body Linear Gradient -->
     <linearGradient id="robotGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#9d5bf0" />
-      <stop offset="100%" stop-color="#625df5" />
+      <stop offset="0%" stop-color="#9b5ce9" />
+      <stop offset="100%" stop-color="#6856e6" />
     </linearGradient>
+
+    <!-- Shadow Blur Filter -->
+    <filter id="shadowBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" />
+    </filter>
   </defs>
-  
-  <!-- Rounded White Background -->
-  <rect x="0" y="0" width="100" height="100" rx="25" fill="#ffffff" />
-  
-  <g transform="translate(-10, -10) scale(1.2)">
-    <!-- Ears/Antennae -->
-    <rect x="33" y="16" width="10" height="22" rx="5" fill="#9d5bf0" />
-    <rect x="57" y="16" width="10" height="22" rx="5" fill="#9d5bf0" />
-    
-    <!-- Body -->
-    <rect x="25" y="32" width="50" height="48" rx="18" fill="url(#robotGrad)" />
-    
-    <!-- Face/Screen -->
-    <rect x="32" y="40" width="36" height="24" rx="8" fill="#1a1a1a" />
-    
-    <!-- Left Eye (Dot) -->
-    <circle cx="43" cy="52" r="3" fill="white" />
-    
-    <!-- Right Eye (Wink) -->
-    <path d="M53,54 Q57,47 61,54" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" />
-  </g>
+
+  <!-- Background -->
+  <rect width="1253" height="1253" fill="url(#bgGrad)" />
+
+  <!-- Shadow Under Robot -->
+  <ellipse cx="631.5" cy="1135" rx="350" ry="30" fill="#141416" opacity="0.6" filter="url(#shadowBlur)" />
+
+  <!-- Robot Body -->
+  <path d="M 631.5 382.0 L 525.0 382.0 L 525.0 207.0 L 519.0 179.0 L 511.0 164.0 L 500.0 152.0 L 487.0 143.0 L 470.0 136.0 L 459.0 134.0 L 436.0 135.0 L 422.0 139.0 L 408.0 147.0 L 393.0 161.0 L 388.0 168.0 L 381.0 183.0 L 378.0 196.0 L 377.0 381.0 L 380.0 404.0 L 387.0 422.0 L 346.0 453.0 L 321.0 479.0 L 297.0 511.0 L 277.0 549.0 L 266.0 579.0 L 258.0 613.0 L 255.0 641.0 L 255.0 849.0 L 257.0 870.0 L 261.0 893.0 L 271.0 927.0 L 289.0 966.0 L 305.0 991.0 L 330.0 1021.0 L 359.0 1047.0 L 390.0 1068.0 L 428.0 1086.0 L 469.0 1098.0 L 493.0 1102.0 L 589.0 1104.0 L 631.5 1104.0 L 674.0 1104.0 L 770.0 1102.0 L 794.0 1098.0 L 835.0 1086.0 L 873.0 1068.0 L 904.0 1047.0 L 933.0 1021.0 L 958.0 991.0 L 974.0 966.0 L 992.0 927.0 L 1002.0 893.0 L 1006.0 870.0 L 1008.0 849.0 L 1008.0 641.0 L 1005.0 613.0 L 997.0 579.0 L 986.0 549.0 L 966.0 511.0 L 942.0 479.0 L 917.0 453.0 L 876.0 422.0 L 883.0 404.0 L 886.0 381.0 L 885.0 196.0 L 882.0 183.0 L 875.0 168.0 L 870.0 161.0 L 855.0 147.0 L 841.0 139.0 L 827.0 135.0 L 804.0 134.0 L 793.0 136.0 L 776.0 143.0 L 763.0 152.0 L 752.0 164.0 L 744.0 179.0 L 738.0 207.0 L 738.0 382.0 Z" fill="url(#robotGrad)" />
+
+  <!-- Robot Face Screen -->
+  <rect x="362" y="505" width="540" height="358" rx="101" fill="#1c1c1c" />
+
+  <!-- Left Eye -->
+  <circle cx="524" cy="682.5" r="44.5" fill="#ffffff" />
+
+  <!-- Right Eye (Wink) -->
+  <path d="M 680 712 L 736.5 662 L 793 712" fill="none" stroke="#ffffff" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
