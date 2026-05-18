@@ -10,6 +10,8 @@ interface Profile {
   subjects?: string[];
   explanation_style?: string;
   onboarding_completed: boolean;
+  is_pro?: boolean;
+  pro_until?: string;
 }
 
 interface AuthContextType {

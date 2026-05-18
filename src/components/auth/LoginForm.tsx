@@ -35,6 +35,7 @@ export function LoginForm() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaCode, setMfaCode] = useState("");
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
@@ -65,6 +66,7 @@ export function LoginForm() {
       return;
     }
     setLoading(true);
+    setAuthError(null);
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: data.email,
@@ -72,7 +74,10 @@ export function LoginForm() {
       });
 
       if (error) {
-        toast.error(error.message);
+        const friendlyMessage = error.message === "Invalid login credentials"
+          ? "Invalid email or password. Please verify your credentials and try again."
+          : error.message;
+        setAuthError(friendlyMessage);
         return;
       }
 
@@ -91,7 +96,7 @@ export function LoginForm() {
       toast.success("Logged in successfully!");
       navigate("/dashboard");
     } catch (err) {
-      toast.error("An unexpected error occurred");
+      setAuthError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -100,6 +105,7 @@ export function LoginForm() {
   const onVerifyMfa = async () => {
     if (!mfaFactorId || !mfaCode) return;
     setLoading(true);
+    setAuthError(null);
     try {
       const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
       if (challengeError) throw challengeError;
@@ -114,7 +120,7 @@ export function LoginForm() {
       toast.success("Logged in successfully!");
       navigate("/dashboard");
     } catch (err: any) {
-      toast.error("MFA verification failed: " + err.message);
+      setAuthError("MFA verification failed: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -230,6 +236,11 @@ export function LoginForm() {
           </CardHeader>
           <form onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="space-y-6 pt-4 pb-8">
+              {authError && (
+                <div className="bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-lg p-3 text-center animate-in fade-in slide-in-from-top-2 duration-200">
+                  <span className="font-semibold leading-relaxed">{authError}</span>
+                </div>
+              )}
               {mfaRequired ? (
                 <div className="space-y-4">
                   <div className="space-y-2">

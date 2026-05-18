@@ -8,6 +8,8 @@ CREATE TABLE public.profiles (
   explanation_style TEXT CHECK (explanation_style IN ('short', 'detailed', 'step_by_step')) DEFAULT 'detailed',
   onboarding_completed BOOLEAN DEFAULT FALSE,
   two_factor_enabled BOOLEAN DEFAULT FALSE,
+  is_pro BOOLEAN DEFAULT FALSE,
+  pro_until TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

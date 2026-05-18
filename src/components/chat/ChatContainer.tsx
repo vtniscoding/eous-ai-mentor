@@ -26,6 +26,8 @@ import {
   Sparkles,
   Sun,
   X,
+  Crown,
+  Check,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -74,6 +76,9 @@ export function ChatContainer() {
   const [showDashboard, setShowDashboard] = useState(true);
   const [showQuizHub, setShowQuizHub] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showUpgradeSuccess, setShowUpgradeSuccess] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(
     false,
   );
@@ -676,6 +681,52 @@ export function ChatContainer() {
     return outputArray;
   }
 
+  const handleUpgradeToPro = async () => {
+    if (!profile?.id) return;
+
+    const isAdmin = !!profile?.email?.toLowerCase().includes("admin");
+    if (!isAdmin) {
+      toast.error("Pro upgrade is currently in private preview. Permanent access is unlocked for admin accounts!");
+      return;
+    }
+
+    setIsUpgrading(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ 
+          is_pro: true, 
+          pro_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() 
+        })
+        .eq("id", profile.id);
+
+      if (error) throw error;
+
+      await refreshProfile();
+      setShowUpgradeModal(false);
+      setShowUpgradeSuccess(true);
+      
+      if (Capacitor.isNativePlatform()) {
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "Welcome to Eous Pro! 👑",
+              body: "You have successfully upgraded. Enjoy unlimited access!",
+              id: 999,
+            }
+          ]
+        });
+      } else {
+        toast.success("Welcome to Eous Pro! 👑");
+      }
+    } catch (err) {
+      console.error("Error upgrading to Pro:", err);
+      toast.error("Failed to process upgrade. Please try again.");
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
   // Monitor stats for milestones and trigger alerts
   useEffect(() => {
     if (!profile?.id || !notificationsEnabledRef.current) return;
@@ -713,6 +764,29 @@ export function ChatContainer() {
 
     checkMilestones();
   }, [stats.streak, stats.level, profile?.id]);
+
+  // Synchronize stats with the Android widget whenever stats change or user logs in/out
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const syncWidget = async () => {
+      try {
+        const { registerPlugin } = await import("@capacitor/core");
+        const Widget = registerPlugin<any>("Widget");
+        
+        await Widget.updateWidgetData({
+          streak: profile?.id ? (stats.streak || 0) : 0,
+          level: profile?.id ? (stats.level || 1) : 1,
+          xp: profile?.id ? (stats.xp || 0) : 0
+        });
+        console.log("Widget synchronized successfully from React:", stats.streak, stats.level, stats.xp);
+      } catch (err) {
+        console.error("Failed to sync stats to widget:", err);
+      }
+    };
+
+    syncWidget();
+  }, [stats.streak, stats.level, stats.xp, profile?.id]);
 
   // Reset suggestions when switching sessions
   useEffect(() => {
@@ -1543,6 +1617,8 @@ export function ChatContainer() {
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         existingFolders={existingFolders}
+        isPro={!!profile?.is_pro || !!profile?.email?.toLowerCase().includes("admin")}
+        onUpgradeClick={() => setShowUpgradeModal(true)}
       />
 
       <div
@@ -2159,6 +2235,158 @@ export function ChatContainer() {
           </div>
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {renderNotifications()}
+          </div>
+        </div>
+      )}
+
+      {/* Glassmorphic Upgrade Pro Modal */}
+      {showUpgradeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-card/90 border border-border/80 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="p-6 border-b border-border/40 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-purple-500 fill-current" />
+                <span className="font-bold text-lg text-foreground">
+                  Upgrade to Eous Pro
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowUpgradeModal(false)}
+                className="h-8 w-8 rounded-full"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-extrabold text-foreground mb-2">
+                  Supercharge Your Study Mentorship 🚀
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  Unlock advanced AI guidance, textbook photo scans, and personalized study tools today.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-stretch">
+                {/* Free Plan */}
+                <div className="bg-muted/30 border border-border/60 rounded-xl p-5 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-base text-foreground mb-1">Standard</h4>
+                    <div className="flex items-baseline gap-1 mb-4">
+                      <span className="text-2xl font-extrabold">$0</span>
+                      <span className="text-xs text-muted-foreground">/ month</span>
+                    </div>
+                    <ul className="space-y-2.5 text-xs text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                        <span>20 Daily AI Chat Queries</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                        <span>Standard Study Quizzes</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-muted-foreground/60 shrink-0" />
+                        <span>Basic Widget Synchronization</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <Button
+                    disabled
+                    variant="outline"
+                    className="w-full mt-6 text-xs h-9 rounded-lg"
+                  >
+                    Current Plan
+                  </Button>
+                </div>
+
+                {/* Pro Plan */}
+                <div className="bg-gradient-to-b from-purple-500/10 to-indigo-500/10 border-2 border-purple-500/60 rounded-xl p-5 flex flex-col justify-between relative shadow-lg shadow-purple-500/5">
+                  <span className="absolute -top-3 right-4 px-2 py-0.5 rounded-full bg-purple-600 text-white font-bold text-[9px] uppercase tracking-wide">
+                    Best Value
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <h4 className="font-bold text-base text-purple-600 dark:text-purple-400">Eous Pro</h4>
+                      <Crown className="h-4 w-4 text-purple-500 fill-current" />
+                    </div>
+                    <div className="flex items-baseline gap-1 mb-4">
+                      <span className="text-2xl font-extrabold text-foreground">$9.99</span>
+                      <span className="text-xs text-muted-foreground">/ month</span>
+                    </div>
+                    <ul className="space-y-2.5 text-xs text-foreground">
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <span className="font-semibold">Unlimited AI Study Mentorship</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <span>Gemini Advanced Reasoning</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <span>Textbook Photo Scans & OCR</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <span className="font-semibold">AI Flashcards Hub (Spaced Repetition)</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <Button
+                    onClick={handleUpgradeToPro}
+                    disabled={isUpgrading}
+                    className="w-full mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs h-9 rounded-lg font-bold shadow-md shadow-purple-500/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2"
+                  >
+                    {isUpgrading ? (
+                      <>
+                        <div className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
+                        <span>Upgrading...</span>
+                      </>
+                    ) : (
+                      <span>Start 7-Day Free Trial</span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Success Modal */}
+      {showUpgradeSuccess && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[120] flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-card border border-amber-500/30 rounded-2xl p-8 text-center max-w-md w-full shadow-2xl relative animate-in zoom-in-95 duration-300 flex flex-col items-center">
+            {/* Golden Crown with Ring Animation */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full scale-120 animate-pulse" />
+              <div className="h-20 w-20 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-600 text-white flex items-center justify-center shadow-lg shadow-amber-500/40 relative z-10 border-2 border-yellow-300">
+                <Crown className="h-10 w-10 fill-current animate-bounce mt-1" />
+              </div>
+            </div>
+
+            <h3 className="text-2xl font-black text-amber-500 mb-2 tracking-wide uppercase">
+              You are Pro! 👑
+            </h3>
+            <p className="text-sm text-foreground font-bold mb-1">
+              Welcome to Eous Pro Premium Member
+            </p>
+            <p className="text-xs text-muted-foreground mb-6 leading-relaxed max-w-xs">
+              Thank you for upgrading! You have unlocked unlimited chat queries, PDF scan tasks, and the Spaced-Repetition Flashcards hub.
+            </p>
+
+            <Button
+              onClick={() => setShowUpgradeSuccess(false)}
+              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-white font-bold h-11 rounded-xl shadow-lg shadow-amber-500/20 hover:scale-[1.01] transition-all"
+            >
+              Let's Study! 🚀
+            </Button>
           </div>
         </div>
       )}
